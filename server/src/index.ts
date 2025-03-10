@@ -1,22 +1,19 @@
 import express, { Express, Request, Response } from 'express';
 import { testConnection } from './config/elasticsearch';
-import { streetService } from './services/streetService';
+import csvRoutes from './api/csv/routes';
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-app.get('/', (_: Request, res: Response) => {
-  res.send('Hello World!');
+app.use(express.json());
+
+// health check
+app.use('/health', (_: Request, res: Response) => {
+  res.status(200).json({ status: 'OK' });
 });
 
-app.post('/import-streets', async (req: Request, res: Response) => {
-  try {
-    const result = await streetService.importFromCsv('path/to/your/csv');
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to import streets data' });
-  }
-});
+// Routes
+app.use('/api/csv', csvRoutes);
 
 app.listen(port, async () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);

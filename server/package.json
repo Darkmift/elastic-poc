@@ -14,9 +14,11 @@
   "dependencies": {
     "@elastic/elasticsearch": "^8.17.1",
     "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.13.10",
-    "csv-parse": "^5.6.0",
+    "csv-parse": "^5.5.3",
     "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },

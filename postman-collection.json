@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "CSV to Elasticsearch API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload CSV",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "text/csv",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/csv/upload?name=my_index",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "csv", "upload"],
+          "query": [
+            {
+              "key": "name",
+              "value": "my_index",
+              "description": "Name for the Elasticsearch index (optional)"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "id,name,address\n1,John Doe,123 Main St\n2,Jane Smith,456 Oak Ave",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "description": "Upload a CSV file to be indexed in Elasticsearch. The file contents will be streamed directly to the server.\n\nExample CSV format:\nid,name,address\n1,John Doe,123 Main St\n2,Jane Smith,456 Oak Ave\n\nNotes:\n- Content-Type must be text/csv\n- The index name can be specified via the 'name' query parameter\n- If no name is provided, a timestamp-based name will be generated\n- Response will include the first 6 rows on success"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/csv"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/csv/upload?name=my_index"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "results": [
+              {
+                "id": "1",
+                "name": "John Doe",
+                "address": "123 Main St"
+              },
+              {
+                "id": "2",
+                "name": "Jane Smith",
+                "address": "456 Oak Ave"
+              }
+            ],
+            "error": null
+          }
+        },
+        {
+          "name": "Error Response - Invalid Format",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/csv"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/csv/upload"
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "results": [],
+            "error": "Invalid CSV format"
+          }
+        }
+      ]
+    }
+  ]
+} 
