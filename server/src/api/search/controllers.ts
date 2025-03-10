@@ -54,6 +54,9 @@ export const deleteRecord = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    // Ensure the mapping exists
+    await searchService.updateIndexMapping(indexName);
+
     const result = await searchService.deleteRecord(indexName, recordId);
     res.json(result);
   } catch (error: any) {

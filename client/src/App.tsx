@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
-import { useSearch } from './api/queries';
+import Modal from './components/Modal';
+import { useSearch, useDeleteRecord } from './api/queries';
 import { SearchType } from './api/types';
 
 const queryClient = new QueryClient();
@@ -9,11 +10,34 @@ const queryClient = new QueryClient();
 function SearchApp() {
   const [query, setQuery] = useState('');
   const [searchType, setSearchType] = useState<SearchType>(SearchType.FREE);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; recordId: string; indexName: string }>({
+    isOpen: false,
+    recordId: '',
+    indexName: ''
+  });
   
   const { data, isLoading, error } = useSearch({
     query,
     type: searchType,
   });
+
+  const deleteRecord = useDeleteRecord();
+
+  const handleDelete = (recordId: string, indexName: string) => {
+    setDeleteModal({ isOpen: true, recordId, indexName });
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteRecord.mutateAsync({
+        indexName: deleteModal.indexName,
+        recordId: deleteModal.recordId
+      });
+      setDeleteModal({ isOpen: false, recordId: '', indexName: '' });
+    } catch (error) {
+      console.error('Failed to delete record:', error);
+    }
+  };
 
   return (
     <Layout>
@@ -75,6 +99,14 @@ function SearchApp() {
             <div className="grid gap-4 p-4 rounded-lg">
               {data?.results.map((result) => (
                 <div key={result.id} className="border rounded-lg p-4 bg-white hover:bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <button
+                      onClick={() => handleDelete(result.id, result.index)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      מחק
+                    </button>
+                  </div>
                   <div className="divide-y divide-gray-200" dir="rtl">
                     {Object.entries(result)
                       .filter(([key]) => key !== 'id' && key !== 'index')
@@ -91,6 +123,14 @@ function SearchApp() {
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, recordId: '', indexName: '' })}
+        onConfirm={confirmDelete}
+        title="אישור מחיקה"
+        message="האם אתה בטוח שברצונך למחוק רשומה זו?"
+      />
     </Layout>
   );
 }

@@ -1,5 +1,5 @@
 import { client } from '../../config/elasticsearch';
-import { QueryDslOperator } from '@elastic/elasticsearch/lib/api/types';
+import { QueryDslOperator, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
 
 export enum SearchType {
   FREE = 'free',
@@ -14,13 +14,24 @@ export interface SearchParams {
 }
 
 export class SearchService {
+  private createBaseQuery(innerQuery: QueryDslQueryContainer): QueryDslQueryContainer {
+    return {
+      bool: {
+        must: [innerQuery],
+        must_not: [
+          { term: { deleted: true } }
+        ]
+      }
+    };
+  }
+
   async search({ query, type, indexName = '*' }: SearchParams) { // Default to all indexes
     try {
-      let searchQuery;
+      let innerQuery: QueryDslQueryContainer;
 
       switch (type) {
         case SearchType.ACCURATE:
-          searchQuery = {
+          innerQuery = {
             query_string: {
               query: query.split(' ').map(term => `"${term}"`).join(' OR '),
               analyze_wildcard: true,
@@ -30,7 +41,7 @@ export class SearchService {
           break;
 
         case SearchType.PHRASE:
-          searchQuery = {
+          innerQuery = {
             multi_match: {
               query,
               type: "phrase" as const,
@@ -42,7 +53,7 @@ export class SearchService {
 
         case SearchType.FREE:
         default:
-          searchQuery = {
+          innerQuery = {
             bool: {
               should: [
                 {
@@ -67,9 +78,11 @@ export class SearchService {
           };
       }
 
+      const finalQuery = this.createBaseQuery(innerQuery);
+
       const result = await client.search({
         index: indexName,
-        query: searchQuery,
+        query: finalQuery,
         size: 100,
         _source: true,
         // Add index name to results
@@ -79,7 +92,7 @@ export class SearchService {
       // Extract only first 6 fields from each hit
       const processedHits = result.hits.hits.map(hit => {
         const source = hit._source as Record<string, any>;
-        const fields = Object.entries(source);
+        const fields = Object.entries(source).filter(([key]) => key !== 'deleted');
         return {
           id: hit._id,
           index: hit._index, // Include which index the result came from
@@ -129,9 +142,12 @@ export class SearchService {
 
   async deleteRecord(indexName: string, recordId: string) {
     try {
-      await client.delete({
+      await client.update({
         index: indexName,
-        id: recordId
+        id: recordId,
+        doc: {
+          deleted: true
+        }
       });
 
       return { success: true, error: null };
@@ -139,6 +155,37 @@ export class SearchService {
       return {
         success: false,
         error: `Failed to delete record: ${error.message}`
+      };
+    }
+  }
+
+  async updateIndexMapping(indexName: string) {
+    try {
+      // First check if the mapping already exists
+      const mappingExists = await client.indices.getMapping({
+        index: indexName
+      });
+
+      // Check if the deleted field is already in the mapping
+      const currentMapping = mappingExists[indexName]?.mappings?.properties || {};
+      if (!currentMapping.deleted) {
+        // Add the deleted field to the mapping
+        await client.indices.putMapping({
+          index: indexName,
+          properties: {
+            deleted: {
+              type: 'boolean'
+            }
+          }
+        });
+      }
+
+      return { success: true, error: null };
+    } catch (error: any) {
+      console.error('Failed to update mapping:', error);
+      return {
+        success: false,
+        error: `Failed to update mapping: ${error.message}`
       };
     }
   }

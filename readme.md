@@ -35,7 +35,7 @@ To assess your suitability for the role, please submit the assignment according 
    - **Results Display Area**:
      - Display only **6 fields per result** (you may choose which fields to display).
      - **Delete Button** for each result:
-       - Clicking this button should **physically delete the record** from ElasticSearch, ensuring it doesn't appear in future search results.
+       - Clicking this button should **not physically delete the record** from ElasticSearch, ensuring it doesn't appear in future search results.
 
 ---
 
