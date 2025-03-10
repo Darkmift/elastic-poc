@@ -14,11 +14,13 @@ export const uploadCsv = async (req: Request, res: Response): Promise<void> => {
     const indexName = fileName.toLowerCase();
 
     const result = await csvService.processStreamToElastic(req, indexName);
+    console.log("🚀 ~ uploadCsv ~ result:", result)
     res.json(result);
   } catch (error: any) {
-    res.status(500).json({ 
-      results: [], 
-      error: `Server error: ${error.message}` 
+    res.status(500).json({
+      indexName: null,
+      results: [],
+      error: `Server error: ${error.message}`
     });
   }
 };

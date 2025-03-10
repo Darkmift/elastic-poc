@@ -19,6 +19,19 @@ services:
       timeout: 10s
       retries: 5
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - elastic
+
 volumes:
   elasticsearch-data:
     driver: local

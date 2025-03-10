@@ -17,7 +17,7 @@ export class CsvService {
     try {
       const content = buffer.toString();
       const records: CsvRecord[] = [];
-      
+
       return new Promise((resolve) => {
         const parser = new Parser({
           columns: true,
@@ -91,21 +91,23 @@ export class CsvService {
         return { results: [], error: `Indexing errors: ${errors.join(', ')}` };
       }
 
-      return { 
-        results: records.slice(0, 6), 
-        error: null 
+      return {
+        indexName,
+        results: records.slice(0, 6),
+        error: null
       };
     } catch (error: any) {
-      return { 
-        results: [], 
-        error: `Failed to process CSV: ${error.message}` 
+      return {
+        indexName: null,
+        results: [],
+        error: `Failed to process CSV: ${error.message}`
       };
     }
   }
 
   private async createIndex(indexName: string, fields: string[]) {
     const properties: Record<string, any> = {};
-    
+
     fields.forEach(field => {
       properties[field] = {
         type: 'text',

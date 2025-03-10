@@ -65,6 +65,7 @@
             }
           ],
           "body": {
+            "indexName": "my_index",
             "results": [
               {
                 "id": "1",
@@ -106,6 +107,150 @@
           "body": {
             "results": [],
             "error": "Invalid CSV format"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search Records",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/api/search/search?query=john&type=free&indexName=my_index",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "search", "search"],
+          "query": [
+            {
+              "key": "query",
+              "value": "john",
+              "description": "Search query text"
+            },
+            {
+              "key": "type",
+              "value": "free",
+              "description": "Search type: 'free' (default), 'accurate', or 'phrase'"
+            },
+            {
+              "key": "indexName",
+              "value": "my_index",
+              "description": "Name of the index to search"
+            }
+          ]
+        },
+        "description": "Search records with different search types:\n- Free Search (default): Searches by the primary name field\n- Accurate Search: Finds records containing at least one exact word match in any field\n- Phrase Search: Finds records where the full phrase matches exactly in any field"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/search/search?query=john&type=free&indexName=my_index"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "results": [
+              {
+                "id": "1",
+                "name": "John Doe",
+                "address": "123 Main St"
+              }
+            ],
+            "total": 1,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Record",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:3000/api/search/my_index/records/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "search", "my_index", "records", "1"]
+        },
+        "description": "Delete a record from the index by its ID. The record will be physically removed from Elasticsearch."
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:3000/api/search/my_index/records/1"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "success": true,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Indexes",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/api/search/list-indexes",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "search", "list-indexes"]
+        },
+        "description": "List all available Elasticsearch indexes with their document count and size."
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/search/list-indexes"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "results": [
+              {
+                "name": "csv_1741599550349",
+                "docsCount": 1219,
+                "size": "756.4kb"
+              }
+            ],
+            "error": null
           }
         }
       ]
