@@ -40,3 +40,30 @@ To assess your suitability for the role, please submit the assignment according 
 ---
 
 **Best of luck!**
+
+## Client structure
+```
+client/
+├── src/
+│   ├── api/
+│   │   ├── types.ts           # Shared types with backend
+│   │   └── queries.ts         # React Query hooks
+│   ├── components/
+│   │   ├── SearchBar/
+│   │   │   ├── index.tsx
+│   │   │   └── styles.ts
+│   │   ├── SearchResults/
+│   │   │   ├── index.tsx
+│   │   │   ├── ResultCard.tsx
+│   │   │   └── styles.ts
+│   │   └── SearchTypeSelector/
+│   │       └── index.tsx
+│   ├── hooks/
+│   │   └── useDebounce.ts     # For search input debouncing
+│   ├── pages/
+│   │   └── Search/
+│   │       ├── index.tsx
+│   │       └── styles.ts
+│   ├── App.tsx
+│   └── main.tsx
+```

@@ -1,4 +1,5 @@
 import { client } from '../../config/elasticsearch';
+import { QueryDslOperator } from '@elastic/elasticsearch/lib/api/types';
 
 export enum SearchType {
   FREE = 'free',
@@ -19,35 +20,49 @@ export class SearchService {
 
       switch (type) {
         case SearchType.ACCURATE:
-          // Match exact words in any field
           searchQuery = {
             query_string: {
               query: query.split(' ').map(term => `"${term}"`).join(' OR '),
-              analyze_wildcard: true
+              analyze_wildcard: true,
+              default_operator: "AND" as QueryDslOperator
             }
           };
           break;
 
         case SearchType.PHRASE:
-          // Match exact phrase in any field
           searchQuery = {
             multi_match: {
               query,
               type: "phrase" as const,
-              fields: ["*"]
+              fields: ["*"],
+              operator: "and" as QueryDslOperator
             }
           };
           break;
 
         case SearchType.FREE:
         default:
-          // Search across all fields instead of just 'name'
           searchQuery = {
-            multi_match: {
-              query,
-              fields: ["*"],
-              type: "best_fields" as const,
-              operator: "or" as const
+            bool: {
+              should: [
+                {
+                  multi_match: {
+                    query,
+                    fields: ["*"],
+                    type: "best_fields" as const,
+                    operator: "or" as QueryDslOperator,
+                    fuzziness: "AUTO"
+                  }
+                },
+                {
+                  multi_match: {
+                    query,
+                    fields: ["*"],
+                    type: "phrase_prefix" as const,
+                    operator: "or" as QueryDslOperator
+                  }
+                }
+              ]
             }
           };
       }
@@ -64,7 +79,7 @@ export class SearchService {
       // Extract only first 6 fields from each hit
       const processedHits = result.hits.hits.map(hit => {
         const source = hit._source as Record<string, any>;
-        const fields = Object.entries(source).slice(0, 6);
+        const fields = Object.entries(source);
         return {
           id: hit._id,
           index: hit._index, // Include which index the result came from
@@ -74,10 +89,11 @@ export class SearchService {
 
       return {
         results: processedHits,
-        total: result.hits.total,
+        total: typeof result.hits.total === 'number' ? result.hits.total : (result.hits.total?.value ?? 0),
         error: null
       };
     } catch (error: any) {
+      console.error('Search error:', error);
       return {
         results: [],
         total: 0,
